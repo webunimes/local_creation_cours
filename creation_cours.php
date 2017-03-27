@@ -1,4 +1,4 @@
-<?
+<?php
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot.'/enrol/meta/lib.php');
 require_once($CFG->dirroot.'/mod/url/lib.php');
@@ -35,18 +35,17 @@ function setTextField(ddl, id) {
 </div>
 <br/>
 
-<?
+<?php
 if (isset($courscree)) {
 	echo "<div class='span12 success'>";
 	echo "<br/>Votre cours " . $coursText . " a bien &eacute;t&eacute; cr&eacute;&eacute;.<br/><br/>";
 	echo "Nom de l'enseignant : $nom <br/><br/>";
-	echo '<a href="/moodle/creation_cours.php">Cliquez-ici pour effectuer une nouvelle cr&eacute;ation de cours</a><br/><br/>';
-	echo '<a href="https://bobbie-test.forpro.unimes.fr/moodle/course/view.php?idnumber='.$coursId.'" target="_blank">Cliquez-ici pour aller dans l\'espace de votre 
-cours</a><br/><br/>';
+	echo '<a href="'.$CFG->wwwroot.'/local/creation_cours/creation_cours.php">Cliquez-ici pour effectuer une nouvelle cr&eacute;ation de cours</a><br/><br/>';
+	echo '<a href="'.$CFG->wwwroot.'/course/view.php?idnumber='.$coursId.'" target="_blank">Cliquez-ici pour aller dans l\'espace de votre cours</a><br/><br/>';
 	if (isset ($mutualises)) {
 		echo "Il s'agissait d'un cours mutualis&eacute;, voici la liste des espaces créés :<br/>";
 		foreach(array_keys($mutualises) as $idCours) {
-			echo ' - dans '.$mutualises[$idCours]. ' référencé <a href="https://bobbie-test.forpro.unimes.fr/moodle/course/view.php?idnumber='.$idCours.'" target="_blank">'.
+			echo ' - dans '.$mutualises[$idCours]. ' référencé <a href="'.$CFG->wwwroot.'/course/view.php?idnumber='.$idCours.'" target="_blank">'.
 			$idCours.'</a><br/><br/>';
 		}
 	}
@@ -95,16 +94,16 @@ cours</a><br/><br/>';
 				//			$nameFile = str_replace(" ","_",$ligne['fullname']);
 				//			$nameFile = str_replace("'","",$nameFile);
 				$fichier = "backup-moodle2-course-".$oldcourse."-";
-				$command = "ls -t /data/moodle/moodlebackup/ | grep '".$fichier."'";
+				$command = "ls -t /data/2016/moodlebackup/ | grep '".$fichier."'";
 				exec($command,$array);
 				if(count($array) > 0)
-				$backup = "/data/moodle/moodlebackup/".$array[0];
+				$backup = "/data/2016/moodlebackup/".$array[0];
 				else { // le fichier peut être nommé sauvegarde-moodle2-course-
 					$fichier = "sauvegarde-moodle2-course-".$oldcourse."-";
-					$command = "ls -t /data/moodle/moodlebackup/ | grep '".$fichier."'";
+					$command = "ls -t /data/2016/moodlebackup/ | grep '".$fichier."'";
 					exec($command,$array);
 					if(count($array) > 0)
-					$backup = "/data/moodle/moodlebackup/".$array[0];
+					$backup = "/data/2016/moodlebackup/".$array[0];
 				}
 			}	
 
@@ -159,8 +158,8 @@ cours</a><br/><br/>';
 		fclose($fic);
 
 		//On exécute le script pour ajouter un cours
-		$commande = "/usr/bin/php /usr/local/apache2/htdocs/moodle/admin/tool/uploadcourse/cli/uploadcourse.php --mode=createorupdate --file=/usr/local/apache2/htdocs/moodle/local/creation_cours/".
-		$fichierCours." --delimiter=semicolon";
+		$commande = "/usr/bin/php ".$CFG->dirroot."/admin/tool/uploadcourse/cli/uploadcourse.php --mode=createorupdate --file=".__DIR__."/".$fichierCours." --delimiter=semicolon";
+echo $commande;
 		exec($commande,$outhy);
 		$southy = implode("\n",$outhy);
 
@@ -206,13 +205,13 @@ cours</a><br/><br/>';
 		echo "<div class='span12 success'>";
 		echo "<br/>Votre cours " . $coursText . " a bien &eacute;t&eacute; cr&eacute;&eacute;.<br/><br/>";
 		echo "Nom de l'enseignant : $nom <br/><br/>";
-		echo '<a href="/moodle/local/creation_cours/creation_cours.php">Cliquez-ici pour effectuer une nouvelle cr&eacute;ation de cours</a><br/><br/>';
-		echo '<a href="https://bobbie-test.forpro.unimes.fr/moodle/course/view.php?idnumber='.$coursId.'" target="_blank">Cliquez-ici pour aller dans l\'espace de votre 
+		echo '<a href="'.$CFG->wwwroot.'/local/creation_cours/creation_cours.php">Cliquez-ici pour effectuer une nouvelle cr&eacute;ation de cours</a><br/><br/>';
+		echo '<a href="'.$CFG->wwwroot.'/course/view.php?idnumber='.$coursId.'" target="_blank">Cliquez-ici pour aller dans l\'espace de votre 
 cours</a><br/><br/>';
 		if (isset ($mutualises)) {
 			echo "Il s'agissait d'un cours mutualis&eacute;, voici la liste des espaces créés :<br/>";
 			foreach(array_keys($mutualises) as $idCours) {
-				echo ' - dans '.$mutualises[$idCours]. ' référencé <a href="https://bobbie-test.forpro.unimes.fr/moodle/course/view.php?idnumber='.$idCours.'" target="_blank">'.
+				echo ' - dans '.$mutualises[$idCours]. ' référencé <a href="'.$CFG->wwwroot.'/course/view.php?idnumber='.$idCours.'" target="_blank">'.
 				$idCours.'</a><br/><br/>';
 			}
 		}
@@ -230,7 +229,7 @@ cours</a><br/><br/>';
 		$ch = "add,editingteacher,".$uid.",".$coursId."\n";
 		fwrite($fic,$ch);
 
-		exec('/usr/bin/php /usr/local/apache2/htdocs/moodle/enrol/flatfile/cli/sync.php');
+		exec('/usr/bin/php ".$CFG->dirroot."/enrol/flatfile/cli/sync.php');
 
 		$courscree = true;
 
@@ -255,7 +254,7 @@ cours</a><br/><br/>';
 	<br/><br/>
 
 
-	<?
+	<?php
 } // Fin if (!isset(courscree)) 
 
 echo $OUTPUT->footer();

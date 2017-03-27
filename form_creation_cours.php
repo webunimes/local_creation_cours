@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 require_once("$CFG->libdir/formslib.php");
@@ -23,7 +23,7 @@ p&eacute;dagogique cours.unimes.fr.');
 
 		// On stocke les cours deja crees
 		$db = mysqli_connect($CFG->dbhost, $CFG->dbuser, $CFG->dbpass) or die("Cannot connect to database engine!");
-		mysqli_select_db($db, $CFG->dbname) or die("Cannot connect to database!");
+		mysqli_select_db($db, $CFG->dbname) or die("Cannot connect to database $CFG->dbname!");
 
 		mysqli_query ($db, "set names utf8");
 		$sql = "SELECT c.idnumber, concat(u.firstname,' ', u.lastname) enseignant FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c  WHERE u.id = r.userid  AND 
@@ -92,10 +92,12 @@ r.contextid = cx.id  AND cx.instanceid = c.id  AND r.component = 'enrol_flatfile
 		$mform->addElement('static', 'description', '', 'Choisir le cours parmi les cours auxquels vous aviez acc&egrave;s sur l\'ancienne plateforme');
 
 		$db = mysqli_connect($CFG->old_mysql, $CFG->dbuser, $CFG->dbpass) or die("Cannot connect to database engine!");
-		mysqli_select_db($db, 'moodle_db') or die("Cannot connect to database!");
+		mysqli_select_db($db, $CFG->old_database) or die("Cannot connect to database $CFG->dbname !");
 		mysqli_query ($db, "set names utf8");
 		$sql = "SELECT distinct c.id courseid, c.fullname coursename, c.shortname shortname FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c WHERE u.id = 
-r.userid AND r.contextid = cx.id AND cx.instanceid = c.id AND r.roleid in (2,3) AND cx.contextlevel =50 AND u.username = '".$USER->username."'";
+r.userid AND r.contextid = cx.id AND cx.instanceid = c.id AND r.roleid in (2,3) AND cx.contextlevel =50 ";
+
+		if ($USER->username != 'admin') $sql .= "AND u.username = '".$USER->username."'";
 		$result = mysqli_query($db, $sql) or die(mysqli_error($db));
 
 		if (!$result) echo "Aucun cours disponible";

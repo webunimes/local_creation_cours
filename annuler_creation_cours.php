@@ -1,4 +1,4 @@
-<?
+<?php
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot.'/enrol/meta/lib.php');
 require_once($CFG->dirroot.'/mod/url/lib.php');
@@ -27,7 +27,7 @@ function setTextField(ddl, id) {
 }
 </script>
 
-<?
+<?php
 //Instantiate simplehtml_form 
 $mform = new annul_html_form();
  

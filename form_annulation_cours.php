@@ -1,4 +1,4 @@
-<?
+<?php
 
 require_once("$CFG->libdir/formslib.php");
 
