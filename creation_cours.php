@@ -53,8 +53,6 @@ if (isset($courscree)) {
 } else {
 	echo "Bonjour $nom <br/><br/>";
 
-	echo "Si vous souhaitez annuler une demande : supprimer un cours créé par cette interface, <a href=\"annuler_creation_cours.php\">cliquez ici</a>.<br/><br/>";
-
 	//Instantiate simplehtml_form
 	$mform = new simplehtml_form();
 
@@ -159,7 +157,6 @@ if (isset($courscree)) {
 
 		//On exécute le script pour ajouter un cours
 		$commande = "/usr/bin/php ".$CFG->dirroot."/admin/tool/uploadcourse/cli/uploadcourse.php --mode=createorupdate --file=".__DIR__."/".$fichierCours." --delimiter=semicolon";
-echo $commande;
 		exec($commande,$outhy);
 		$southy = implode("\n",$outhy);
 
@@ -229,7 +226,7 @@ cours</a><br/><br/>';
 		$ch = "add,editingteacher,".$uid.",".$coursId."\n";
 		fwrite($fic,$ch);
 
-		exec('/usr/bin/php ".$CFG->dirroot."/enrol/flatfile/cli/sync.php');
+		exec('/usr/bin/php '.$CFG->dirroot.'/enrol/flatfile/cli/sync.php');
 
 		$courscree = true;
 

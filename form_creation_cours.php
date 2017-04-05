@@ -13,25 +13,39 @@ class simplehtml_form extends moodleform {
 		$mform->setRequiredNote('* = champs obligatoires');
 		$mform->setJsWarnings('Erreur de saisie ','Veuillez corriger');
 
-		$mform->addElement('static', 'title', '', 'Bienvenue sur le formulaire de cr&eacute;ation de votre espace de cours pour l\'ann&eacute;e 2017/2018 sur la plateforme 
-p&eacute;dagogique cours.unimes.fr.');
+        $mform->addElement('html', "<b>Cet espace vous permet de cr&eacute;er un espace de cours en ligne sur la plateforme p&eacute;dagogique Un&icirc;mes. Les cours propos&eacute;s sont rattach&eacute;s aux maquettes universitaires valid&eacute;es.</b><br/><br/>
+Vous pouvez au choix :<br/>
+A.      Cr&eacute;er un espace de cours vide<br/>
+B.      Cr&eacute;er un espace de cours en r&eacute;cup&eacute;rant les ressources et activit&eacute;s que vous aviez dans votre espace de cours de l'an dernier<br/><br/>
+<table border=1><tr style='font-weight: bold; text-align: center'>
+        <td>Cr&eacute;er un espace de cours vide</td><td>R&eacute;cup&eacute;ration des contenus d'un cours de l'an dernier</td>
+    </tr><tr>
+        <td>1.  Vous devez identifier le cours que vous souhaitez cr&eacute;er via les 4 listes d&eacute;roulantes de la partie \" Cr&eacute;ation d'un cours vide pour l'ann&eacute;e 2017-2018 \"<br/>
+        2.      Cliquez sur \" Enregistrer \" en bas de la page.
+        </td>
+        <td>
+        1.      Vous devez identifier le cours dans la maquette 2017-2018 via les 4 listes d&eacute;roulantes de la partie \" Cr&eacute;ation d'un cours vide pour l'ann&eacute;e 2017-2018 \"<br/>
+        2.      S&eacute;lectionnez le cours dont vous souhaitez r&eacute;cup&eacute;rer le contenu dans la liste d&eacute;roulante de la partie \" R&eacute;cup&eacute;ration d'un cours de l'an dernier \"<br/>
+        3.      Cliquez sur \" Enregistrer \" en bas de la page.
+        </td></tr></table>
+");
 
-		// Première partie : création d'un cours
+		// Première partie : cr&eacute;ation d'un cours
 		
-		$mform->addElement('header', 'destination', 'G&eacute;n&eacute;ral');
-		$mform->addElement('static', 'description', '', 'S&eacute;lectionnez votre cours dans les listes d&eacute;roulantes ci-dessous ...');
+		$mform->addElement('header', 'destination', 'Cr&eacute;ation d\'un cours vide pour l\'ann&eacute;e 2017-2018');
+		$mform->addElement('html', 'S&eacute;lectionnez votre cours en utilisant obligatoirement les 4 listes d&eacute;roulantes.<br/><br/>');
 
 		// On stocke les cours deja crees
 		$db = mysqli_connect($CFG->dbhost, $CFG->dbuser, $CFG->dbpass) or die("Cannot connect to database engine!");
 		mysqli_select_db($db, $CFG->dbname) or die("Cannot connect to database $CFG->dbname!");
 
 		mysqli_query ($db, "set names utf8");
-		$sql = "SELECT c.idnumber, concat(u.firstname,' ', u.lastname) enseignant FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c  WHERE u.id = r.userid  AND 
-r.contextid = cx.id  AND cx.instanceid = c.id  AND r.component = 'enrol_flatfile'";
+//		$sql = "SELECT c.idnumber, concat(u.firstname,' ', u.lastname) enseignant FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c  WHERE u.id = r.userid  AND r.contextid = cx.id  AND cx.instanceid = c.id"; //  AND r.component = 'enrol_flatfile'";
+		$sql = "SELECT idnumber FROM mdl_course";
 		$result = mysqli_query($db, $sql);
 		$courscrees = array();
 		while($row = mysqli_fetch_array($result)) {
-			$courscrees[$row['idnumber']] = $row['enseignant']; 
+			$courscrees[$row['idnumber']] = ''; // $row['enseignant']; 
 		}
 		mysqli_close($db);
 		
@@ -88,8 +102,7 @@ r.contextid = cx.id  AND cx.instanceid = c.id  AND r.component = 'enrol_flatfile
 		// Seconde partie : Restauration de cours 
 		$mform->addElement('header', 'source', 'R&eacute;cup&eacute;ration d\'un cours de l\'an dernier');
 		$mform->closeHeaderBefore('source');
-		$mform->addElement('static', 'description', '', 'Il est possible de restaurer un cours de l\'ancienne plateforme dans un cours nouvellement cr&eacute;&eacute; sur la plateforme 2017.');
-		$mform->addElement('static', 'description', '', 'Choisir le cours parmi les cours auxquels vous aviez acc&egrave;s sur l\'ancienne plateforme');
+		$mform->addElement('html', 'Choisir dans la liste d&eacute;roulante ci-dessous le cours de l\'ancienne plateforme dont vous souhaitez r&eacute;cup&eacute;rer le contenu.<br/><br/>');
 
 		$db = mysqli_connect($CFG->old_mysql, $CFG->dbuser, $CFG->dbpass) or die("Cannot connect to database engine!");
 		mysqli_select_db($db, $CFG->old_database) or die("Cannot connect to database $CFG->dbname !");
@@ -113,6 +126,10 @@ r.userid AND r.contextid = cx.id AND cx.instanceid = c.id AND r.roleid in (2,3) 
 		mysqli_close($db);
 		
 		$this->add_action_buttons();
+
+		$mform->addElement('header', 'source', 'Suppression d\'un cours cr&eacute;&eacute; par erreur');
+		$mform->addElement('html', 'Si vous souhaitez annuler une demande de cr&eacute;ation de cours effectu&eacute;e depuis cette interface, <a href="annuler_creation_cours.php">cliquez ici</a>.<br/><br/>') ;
+
 	}
 	//Custom validation should be added here
 	function validation($data, $files) {
