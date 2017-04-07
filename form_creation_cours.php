@@ -40,12 +40,13 @@ B.      Cr&eacute;er un espace de cours en r&eacute;cup&eacute;rant les ressourc
 		mysqli_select_db($db, $CFG->dbname) or die("Cannot connect to database $CFG->dbname!");
 
 		mysqli_query ($db, "set names utf8");
-//		$sql = "SELECT c.idnumber, concat(u.firstname,' ', u.lastname) enseignant FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c  WHERE u.id = r.userid  AND r.contextid = cx.id  AND cx.instanceid = c.id"; //  AND r.component = 'enrol_flatfile'";
-		$sql = "SELECT idnumber FROM mdl_course";
+		$sql = "SELECT c.idnumber, concat(u.firstname,' ', u.lastname) enseignant FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c  WHERE c.idnumber is not null AND u.id = r.userid  AND r.contextid = cx.id  AND cx.instanceid = c.id"; //  AND r.component = 'enrol_flatfile'";
+//		$sql = "SELECT idnumber FROM mdl_course";
 		$result = mysqli_query($db, $sql);
 		$courscrees = array();
 		while($row = mysqli_fetch_array($result)) {
-			$courscrees[$row['idnumber']] = ''; // $row['enseignant']; 
+//print_r($row);
+			$courscrees[$row['idnumber']] = $row['enseignant']; 
 		}
 		mysqli_close($db);
 		
@@ -92,7 +93,7 @@ B.      Cr&eacute;er un espace de cours en r&eacute;cup&eacute;rant les ressourc
 		$select_niveau4->addOption( 'Cours', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
 		while (ocifetch($stmt)) {
 			if (in_array(ociresult($stmt,1),array_keys($courscrees)))
-			$select_niveau4->addOption(ociresult($stmt,2),ociresult($stmt,1),array('disabled' => 'disabled', 'class'=>ociresult($stmt,3)));
+			$select_niveau4->addOption(ociresult($stmt,2) . ' par ' . $courscrees[ociresult($stmt,1)],ociresult($stmt,1),array('disabled' => 'disabled', 'class'=>ociresult($stmt,3)));
 			else $select_niveau4->addOption(ociresult($stmt,2),ociresult($stmt,1),array('class'=>ociresult($stmt,3)));
 		}
 		$mform->addElement($select_niveau4);

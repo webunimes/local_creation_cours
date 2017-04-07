@@ -20,6 +20,8 @@ $nom = fullname($USER, true);
 //moodleform
 require_once($CFG->dirroot.'/local/creation_cours/form_creation_cours.php');
 
+if (strpos($USER->email,'@etudiant.unimes.fr') == false) { 
+
 ?>
 
 
@@ -255,6 +257,8 @@ cours</a><br/><br/>';
 } // Fin if (!isset(courscree)) 
 
 echo $OUTPUT->footer();
+
+} else echo "Les &eacute;tudiants n'ont pas acc&egrave;s &agrave; cette page.";
 ?>
 
 
