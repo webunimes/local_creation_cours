@@ -78,7 +78,7 @@ if (isset($courscree)) {
 		$niveau4 = $formdata->niveau4;
 		$tniveau4 = $formdata->tniveau4;
 
-		$backup = "";
+		$backup = __DIR__."/template.mbz";
 		//On veut récupérer une sauvegarde de l'an passé
 		if (isset($formdata->oldcourse) && !empty($formdata->oldcourse)) {
 			$oldb = mysqli_connect ($CFG->old_mysql,$CFG->dbuser,$CFG->dbpass) or die ('ERREUR '.mysqli_error($oldb));
@@ -115,10 +115,10 @@ if (isset($courscree)) {
 		$ch = "fullname;shortname;category_path;idnumber;summary;backupfile;format\n";
 		fwrite($fic,$ch);
 		// On définit la catégorie de destination
-		if (empty($niveau4)) {
-			$category = $tniveau1.' / '.$tniveau2;
-			$coursId = $niveau3;
-			$coursue = $tniveau3;
+		if ($tniveau1 === $tniveau2) {
+			$category = $tniveau1.' / '.$tniveau3;
+			$coursId = $niveau4;
+			$coursue = $tniveau4;
 		}	
 		else {
 			$category = $tniveau1.' / '.$tniveau2.' / '.$tniveau3;
@@ -129,7 +129,7 @@ if (isset($courscree)) {
 		$coursText = $ecue[0];
 		// TODO : Category créée avant ? : oui sauf semestres
 		// 
-		$cours = ucfirst(strtolower($coursText)).";".ucfirst(strtolower($coursText))."-".trim($coursId).";".$category.";".trim($coursId).";".strtolower($coursText).";".$backup.";\n";
+		$cours = ucfirst(strtolower($coursText)).";".ucfirst(strtolower($coursText))."-".trim($coursId).";".$category.";".trim($coursId).";".strtolower($coursText).";".$backup.";topics\n";
 		fwrite($fic,$cours);
 
 		if (substr($coursId, 0, 3) === "MUT") {
@@ -147,8 +147,7 @@ if (isset($courscree)) {
 				$newText = ociresult($stmt,2);
 				if ($newcategory != $category) {
 					$num++;
-					$cours = ucfirst(strtolower($newText)).";".ucfirst(strtolower($newText))."-".trim($coursId)."-".$num.";".$newcategory.";".trim($coursId)."-".$num.";".strtolower
-					($newText).";;singleactivity\n";
+					$cours = ucfirst(strtolower($newText)).";".ucfirst(strtolower($newText))."-".trim($coursId)."-".$num.";".$newcategory.";".trim($coursId)."-".$num.";".strtolower($newText).";;singleactivity\n";
 					fwrite($fic,$cours);
 					$mutualises[trim($coursId)."-".$num] = $newcategory . " / " . $newText;
 				}
@@ -171,10 +170,13 @@ if (isset($courscree)) {
 			foreach(array_keys($mutualises) as $idCours) {
 				$test = $DB->get_record('course',array('idnumber' => $idCours));
 				if (isset($test->id)) {
+					$module = $DB->get_record("modules", array("name" => "url"));
+
 					$metalplugin->add_instance($course, array('customint1'=>$test->id));
 					// TEST Contruction de l'objet URL
 					$data = new stdClass();
 					$data->course = $test->id;
+					$data->coursemodule = ''; //get_coursemodule_from_instance('url', $id);
 					$data->name = 'Lien vers le cours';
 					$data->intro = '';
 					$data->introformat = 1;
@@ -184,7 +186,6 @@ if (isset($courscree)) {
 					$data->displayoptions = 'a:1:{s:10:"printintro";i:1;}';
 					url_add_instance($data, null);
 
-					$module = $DB->get_record("modules", array("name" => "url"));
 					$section0 = $DB->get_record("course_sections", array('course' => $test->id, 'section' => 0));
 
 					$mod = new stdClass();

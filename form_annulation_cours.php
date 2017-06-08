@@ -24,14 +24,14 @@ class annul_html_form extends moodleform {
 		mysqli_select_db($db, $CFG->dbname) or die("Cannot connect to database!");
 
 		mysqli_query ($db, "set names utf8");
-		$sql = "SELECT c.idnumber, c.fullname FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c  WHERE u.id = r.userid  AND u.id = $USER->id  AND r.contextid = cx.id  AND cx.instanceid = c.id  AND r.component = 'enrol_flatfile'";
+		$sql = "SELECT c.idnumber, c.fullname, cat.name FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c, mdl_course_categories cat  WHERE u.id = r.userid  AND u.id = $USER->id  AND r.contextid = cx.id  AND cx.instanceid = c.id  AND r.component = 'enrol_flatfile' AND cat.id = cx.instanceid";
 		$result = mysqli_query($db, $sql);
 		
 		if (!$result) echo "Aucun cours disponible";
 		else {
 			$select_course = $mform->createElement( 'select', 'course', 'Ancien cours :', null,array('onchange' => 'setTextField(this,\'tcourse\');'));
 			$select_course->addOption( 'Cours cr&eacute;&eacute; par erreur', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
-			while ($row = mysqli_fetch_assoc($result)) $select_course->addOption($row["fullname"] .'(TODO : ajouter catégorie))',$row["idnumber"]);
+			while ($row = mysqli_fetch_assoc($result)) $select_course->addOption($row["fullname"].' ('.$row["idnumber"].') - '.$row["name"],$row["idnumber"]);
 			$mform->addElement($select_course);
 			$mform->addRule('course', 'Vous devez saisir une ligne', 'required', '', 'client');
 			$mform->addElement('hidden', 'tcourse', '',array('id'=>'tcourse'));

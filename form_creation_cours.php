@@ -57,10 +57,10 @@ B.      Cr&eacute;er un espace de cours en r&eacute;cup&eacute;rant les ressourc
 		$stmt = ociparse($connect,$req);
 		ociexecute($stmt,OCI_DEFAULT);
 		$select_niveau1 = $mform->createElement( 'select', 'niveau1', 'Niveau 1 :', null, array('onchange' => 'setTextField(this,\'tniveau1\');'));
-		$select_niveau1->addOption( 'Domaines / DU / UE libres', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
+		$select_niveau1->addOption( 'Domaines / DU / UE d\'ouverture', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
 		while (ocifetch($stmt)) $select_niveau1->addOption(ociresult($stmt,2),ociresult($stmt,1));
 		$mform->addElement($select_niveau1);
-		$mform->addRule('niveau1', 'Vous devez saisir une ligne dans "Domaines / DU / UE libres"', 'required', '', 'client');
+		$mform->addRule('niveau1', 'Vous devez saisir une ligne dans "Domaines / DU / UE d\'ouverture"', 'required', '', 'client');
 		$mform->addElement('hidden', 'tniveau1', '',array('id'=>'tniveau1'));
 
 		// Le niveau 2
@@ -71,11 +71,11 @@ B.      Cr&eacute;er un espace de cours en r&eacute;cup&eacute;rant les ressourc
 		$select_niveau2->addOption( 'Dipl&ocirc;me / mention', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
 		while (ocifetch($stmt)) $select_niveau2->addOption(ociresult($stmt,2),ociresult($stmt,1),array('class'=>ociresult($stmt,3)));
 		$mform->addElement($select_niveau2);
-		$mform->addRule('niveau2', 'Vous devez saisir une ligne dans "Dipl&ocirc;me / mention"', 'required', '', 'client');
+		$mform->addRule('niveau2', 'Vous devez saisir une ligne dans "Diplome / mention"', 'required', '', 'client');
 		$mform->addElement('hidden', 'tniveau2', '',array('id'=>'tniveau2'));
 		
 		// Le niveau 3
-		$req = "select * from mdl_niveau3 where code in (select distinct id || '' from mdl_niveau4) or CODE like 'UEL%'";
+		$req = "select * from mdl_niveau3 where code in (select distinct id || '' from mdl_niveau4) or CODE like 'UEO%'";
 		$stmt = ociparse($connect,$req);
 		ociexecute($stmt,OCI_DEFAULT);
 		$select_niveau3 = $mform->createElement( 'select', 'niveau3', 'Niveau 3 :', null, array('onchange' => 'setTextField(this,\'tniveau3\');'));
