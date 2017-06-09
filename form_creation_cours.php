@@ -50,52 +50,99 @@ B.      Cr&eacute;er un espace de cours en r&eacute;cup&eacute;rant les ressourc
 		}
 		mysqli_close($db);
 		
-		$connect = ocilogon($CFG->si_user,$CFG->si_pass,$CFG->si_url_base);
+		if(!apc_exists('niveaux1') || !apc_exists('niveaux2') || !apc_exists('niveaux3') || !apc_exists('niveaux4') ){
+			$connect = ocilogon($CFG->si_user,$CFG->si_pass,$CFG->si_url_base);
+		}
 		
 		// Le niveau 1 
-		$req = "select * from mdl_niveau1";
-		$stmt = ociparse($connect,$req);
-		ociexecute($stmt,OCI_DEFAULT);
+		if(!apc_exists('niveaux1')){
+			$req = "select * from mdl_niveau1";
+			$stmt = ociparse($connect,$req);
+			ociexecute($stmt,OCI_DEFAULT);
+			$niveaux1 = array();
+			while (($row = oci_fetch_array($stmt, OCI_BOTH)) != false) {
+				$niveaux1[] = $row;
+			}
+			apc_store('niveaux1', $niveaux1);
+		}
+		$niveaux1_cache = apc_fetch('niveaux1');
+			
 		$select_niveau1 = $mform->createElement( 'select', 'niveau1', 'Niveau 1 :', null, array('onchange' => 'setTextField(this,\'tniveau1\');'));
 		$select_niveau1->addOption( 'Domaines / DU / UE d\'ouverture', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
-		while (ocifetch($stmt)) $select_niveau1->addOption(ociresult($stmt,2),ociresult($stmt,1));
+		
+		foreach ($niveaux1_cache as $row) {
+			$select_niveau1->addOption($row[1],$row[0]);
+		}
 		$mform->addElement($select_niveau1);
 		$mform->addRule('niveau1', 'Vous devez saisir une ligne dans "Domaines / DU / UE d\'ouverture"', 'required', '', 'client');
 		$mform->addElement('hidden', 'tniveau1', '',array('id'=>'tniveau1'));
 
 		// Le niveau 2
-		$req = "select * from mdl_niveau2";
-		$stmt = ociparse($connect,$req);
-		ociexecute($stmt,OCI_DEFAULT);
+		if(!apc_exists('niveaux2')){
+			$req = "select * from mdl_niveau2";
+			$stmt = ociparse($connect,$req);
+			ociexecute($stmt,OCI_DEFAULT);
+			$niveaux2 = array();
+			while (($row = oci_fetch_array($stmt, OCI_BOTH)) != false) {
+				$niveaux2[] = $row;
+			}
+			apc_store('niveaux2', $niveaux2);
+		}
+		$niveaux2_cache = apc_fetch('niveaux2');
+				
 		$select_niveau2 = $mform->createElement( 'select', 'niveau2', 'Niveau 2 :', null, array('onchange' => 'setTextField(this,\'tniveau2\');'));
 		$select_niveau2->addOption( 'Dipl&ocirc;me / mention', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
-		while (ocifetch($stmt)) $select_niveau2->addOption(ociresult($stmt,2),ociresult($stmt,1),array('class'=>ociresult($stmt,3)));
+		
+		foreach ($niveaux2_cache as $row) {
+			$select_niveau2->addOption($row[1],$row[0],array('class'=>$row[2]));
+		}
 		$mform->addElement($select_niveau2);
 		$mform->addRule('niveau2', 'Vous devez saisir une ligne dans "Diplome / mention"', 'required', '', 'client');
 		$mform->addElement('hidden', 'tniveau2', '',array('id'=>'tniveau2'));
 		
 		// Le niveau 3
-		$req = "select * from mdl_niveau3 where code in (select distinct id || '' from mdl_niveau4) or CODE like 'UEO%'";
-		$stmt = ociparse($connect,$req);
-		ociexecute($stmt,OCI_DEFAULT);
+		if(!apc_exists('niveaux3')){
+			$req = "select * from mdl_niveau3 where code in (select distinct id || '' from mdl_niveau4) or CODE like 'UEO%'";
+			$stmt = ociparse($connect,$req);
+			ociexecute($stmt,OCI_DEFAULT);
+			$niveaux3 = array();
+			while (($row = oci_fetch_array($stmt, OCI_BOTH)) != false) {
+				$niveaux3[] = $row;
+			}
+			apc_store('niveaux3', $niveaux3);
+		}
+		$niveaux3_cache = apc_fetch('niveaux3');
+		
 		$select_niveau3 = $mform->createElement( 'select', 'niveau3', 'Niveau 3 :', null, array('onchange' => 'setTextField(this,\'tniveau3\');'));
 		$select_niveau3->addOption( 'Semestre / Parcours', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
-		while (ocifetch($stmt)) $select_niveau3->addOption(ociresult($stmt,2),ociresult($stmt,1),array('class'=>ociresult($stmt,3)));
+		foreach ($niveaux3_cache as $row) {
+			$select_niveau3->addOption($row[1],$row[0],array('class'=>$row[2]));
+		}
 		$mform->addElement($select_niveau3);
 		$mform->addRule('niveau3', 'Vous devez saisir une ligne dans "Semestre / Parcours"', 'required', '', 'client');
 		$mform->addElement('hidden', 'tniveau3', '',array('id'=>'tniveau3'));
 		
 		// Le niveau 4
-		$req = "select * from mdl_niveau4";
-		$stmt = ociparse($connect,$req);
-		ociexecute($stmt,OCI_DEFAULT);
+		if(!apc_exists('niveaux4')){
+			$req = "select * from mdl_niveau4";
+			$stmt = ociparse($connect,$req);
+			ociexecute($stmt,OCI_DEFAULT);
+			$niveaux4 = array();
+			while (($row = oci_fetch_array($stmt, OCI_BOTH)) != false) {
+				$niveaux4[] = $row;
+			}
+			apc_store('niveaux4', $niveaux4);
+		}
+		$niveaux4_cache = apc_fetch('niveaux4');
+
 		$select_niveau4 = $mform->createElement( 'select', 'niveau4', 'Niveau 4 :', null, array('onchange' => 'setTextField(this,\'tniveau4\');'));
 		$select_niveau4->addOption( 'Cours', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
-		while (ocifetch($stmt)) {
-			if (in_array(ociresult($stmt,1),array_keys($courscrees)))
-			$select_niveau4->addOption(ociresult($stmt,2) . ' par ' . $courscrees[ociresult($stmt,1)],ociresult($stmt,1),array('disabled' => 'disabled', 'class'=>ociresult($stmt,3)));
-			else $select_niveau4->addOption(ociresult($stmt,2),ociresult($stmt,1),array('class'=>ociresult($stmt,3)));
+		foreach ($niveaux4_cache as $row) {
+			if (in_array($row[0],array_keys($courscrees)))
+				$select_niveau4->addOption($row[1] . ' par ' . $courscrees[$row[0]],$row[0],array('disabled' => 'disabled', 'class'=>$row[2]));
+			else $select_niveau4->addOption($row[1],$row[0],array('class'=>$row[2]));
 		}
+		
 		$mform->addElement($select_niveau4);
 		$mform->addRule('niveau4', 'Vous devez saisir une ligne dans "Cours"', 'required', '', 'client');
 		$mform->addElement('hidden', 'tniveau4', '',array('id'=>'tniveau4'));
