@@ -1,3 +1,4 @@
+<html  class="loading">
 <?php
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot.'/enrol/meta/lib.php');
@@ -31,6 +32,24 @@ function setTextField(ddl, id) {
 	document.getElementById(id).value = ddl.options[ddl.selectedIndex].text;
 }
 </script>
+
+<style>
+html.loading {
+    /* Replace #333 with the background-color of your choice */
+    /* Replace loading.gif with the loading image of your choice */
+    background: #333 url('loading.gif') no-repeat 50% 50%;
+    /* Ensures that the transition only runs in one direction */
+    -webkit-transition: background-color 0;
+    transition: background-color 0;
+}
+html.loading body {
+    /* Make the contents of the body opaque during loading */
+    opacity: 0;
+    /* Ensures that the transition only runs in one direction */
+    -webkit-transition: opacity 0;
+    transition: opacity 0;
+}
+</style>
 
 <div>
 <h1>Cr&eacute;er votre espace de cours en ligne</h1>
@@ -262,6 +281,12 @@ echo $OUTPUT->footer();
 } else echo "Les &eacute;tudiants n'ont pas acc&egrave;s &agrave; cette page.";
 ?>
 
+<script>
+// IE10+
+document.getElementsByTagName( "html" )[0].classList.remove( "loading" );
 
+// All browsers
+document.getElementsByTagName( "html" )[0].className.replace( /loading/, "" );
+</script>
 </body>
 </html>

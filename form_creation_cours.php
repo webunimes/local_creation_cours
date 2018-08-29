@@ -40,7 +40,7 @@ B.      Cr&eacute;er un espace de cours en r&eacute;cup&eacute;rant les ressourc
 		mysqli_select_db($db, $CFG->dbname) or die("Cannot connect to database $CFG->dbname!");
 
 		mysqli_query ($db, "set names utf8");
-		$sql = "SELECT c.idnumber, concat(u.firstname,' ', u.lastname) enseignant FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c  WHERE c.idnumber is not null AND u.id = r.userid  AND r.contextid = cx.id  AND cx.instanceid = c.id"; //  AND r.component = 'enrol_flatfile'";
+		$sql = "SELECT c.idnumber, concat(u.firstname,' ', u.lastname) enseignant FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c  WHERE c.idnumber is not null AND u.id = r.userid  AND r.contextid = cx.id  AND cx.instanceid = c.id AND r.component <> ''"; //  AND r.component = 'enrol_flatfile'";
 //		$sql = "SELECT idnumber FROM mdl_course";
 		$result = mysqli_query($db, $sql);
 		$courscrees = array();
@@ -150,6 +150,7 @@ B.      Cr&eacute;er un espace de cours en r&eacute;cup&eacute;rant les ressourc
 		// Seconde partie : Restauration de cours 
 		$mform->addElement('header', 'source', 'R&eacute;cup&eacute;ration d\'un cours de l\'an dernier');
 		$mform->closeHeaderBefore('source');
+		$mform->setExpanded('source');
 		$mform->addElement('html', 'Choisir dans la liste d&eacute;roulante ci-dessous le cours de l\'ancienne plateforme dont vous souhaitez r&eacute;cup&eacute;rer le contenu.<br/><br/>');
 
 		$db = mysqli_connect($CFG->old_mysql, $CFG->dbuser, $CFG->dbpass) or die("Cannot connect to database engine!");
@@ -165,7 +166,8 @@ r.userid AND r.contextid = cx.id AND cx.instanceid = c.id AND r.roleid in (2,3) 
 		else {
 			
 			$select_oldcourse = $mform->createElement( 'select', 'oldcourse', 'Ancien cours :', null);
-			$select_oldcourse->addOption( 'Ancien cours', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
+			// $select_oldcourse->addOption( 'Ancien cours', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
+			$select_oldcourse->addOption( 'Ancien cours', '', array('selected'=>'true' ) );
 			
 			while ($row = mysqli_fetch_assoc($result)) $select_oldcourse->addOption($row["coursename"] . '(' .$row["shortname"] .')',$row["courseid"]);
 			$mform->addElement($select_oldcourse);
