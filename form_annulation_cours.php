@@ -20,28 +20,29 @@ class annul_html_form extends moodleform {
 		$mform->addElement('static', 'description', '', 'S&eacute;lectionnez le cours cr&eacute;&eacute; par erreur dans la liste d&eacute;roulante ci-dessous.');
 
 		// On recup les cours deja crees
-		$db = mysqli_connect($CFG->dbhost, $CFG->dbuser, $CFG->dbpass) or die("Cannot connect to database engine!");
-		mysqli_select_db($db, $CFG->dbname) or die("Cannot connect to database!");
+		defined('MOODLE_INTERNAL') || die();
+                global $DB;
 
-		mysqli_query ($db, "set names utf8");
 		$sql = "SELECT c.idnumber, c.fullname, cat.name FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c, mdl_course_categories cat  WHERE u.id = r.userid  AND u.id = $USER->id  AND r.contextid = cx.id  AND cx.instanceid = c.id  AND r.roleid = '3' AND cat.id = c.category";
-		$result = mysqli_query($db, $sql);
 
-//print_r($sql) ;
-//print_r($result) ;
+                $courses = $DB->get_records_sql($sql, $params, 0, $limit);
 
 		if (!$result) echo "Aucun cours disponible";
 		else {
 			$select_course = $mform->createElement( 'select', 'course', 'Liste des cours cr&eacute;&eacute;s :', null,array('onchange' => 'setTextField(this,\'tcourse\');'));
 			$select_course->addOption( 'Cours cr&eacute;&eacute; par erreur', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
-			while ($row = mysqli_fetch_assoc($result)) $select_course->addOption($row["fullname"].' ('.$row["idnumber"].') - '.$row["name"],$row["idnumber"]);
+                	foreach ($courses as $course) {
+				$select_course->addOption($course->fullname.' ('.$course->idnumber.') - '.$course->name,$course->idnumber);
+//                      	echo $course->idnumber . ' --> ' . $course->enseignant;
+			}
 			$mform->addElement($select_course);
 			$mform->addRule('course', 'Vous devez saisir une ligne', 'required', '', 'client');
 			$mform->addElement('hidden', 'tcourse', '',array('id'=>'tcourse'));
-		} 
-		mysqli_close($db);
 		
-		$this->add_action_buttons($cancel = true, $submitlabel='Demander la suppression du cours');
+			$this->add_action_buttons($cancel = true, $submitlabel='Demander la suppression du cours');
+		
+		} 
+		
 	}
 	//Custom validation should be added here
 	function validation($data, $files) {
