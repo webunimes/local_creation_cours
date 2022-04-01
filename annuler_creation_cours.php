@@ -46,7 +46,7 @@ if ($mform->is_cancelled()) {
   //mail("si-scol@unimes.fr",$subject,$message,$headers);
   mail("no-reply-coursenligne@unimes.fr",$subject,$message,$headers);
   mail("guillaume.galles@unimes.fr",$subject,$message,$headers);
-  echo "Votre demande d'annulation a &eacute;t&eacute; prise en compte.<br/><br/> Pour &eacute;viter des cons&eacute;quences f&acirc;cheuses, celle-ci doit &ecirc;tre effectu&eacute;e manuellement.";
+  echo "<span style=\"font-size:16px\">Votre demande d'annulation a &eacute;t&eacute; prise en compte.<br/><br/> Pour &eacute;viter des cons&eacute;quences f&acirc;cheuses, celle-ci doit &ecirc;tre effectu&eacute;e manuellement.</span>";
 } else {
   // this branch is executed if the form is submitted but the data doesn't validate and the form should be redisplayed
   // or on the first display of the form.

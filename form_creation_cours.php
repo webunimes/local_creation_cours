@@ -3,7 +3,7 @@
 
 require_once("$CFG->libdir/formslib.php");
 // Decommenter pour forcer le rechargement du formulaire
-// apcu_clear_cache ();
+//apcu_clear_cache ();
 
 class simplehtml_form extends moodleform {
 	//Add elements to form

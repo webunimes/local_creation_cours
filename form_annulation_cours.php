@@ -25,9 +25,10 @@ class annul_html_form extends moodleform {
 
 		$sql = "SELECT c.idnumber, c.fullname, cat.name FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c, mdl_course_categories cat  WHERE u.id = r.userid  AND u.id = $USER->id  AND r.contextid = cx.id  AND cx.instanceid = c.id  AND r.roleid = '3' AND cat.id = c.category";
 
+
                 $courses = $DB->get_records_sql($sql, $params, 0, $limit);
 
-		if (!$result) echo "Aucun cours disponible";
+		if (!$courses) echo "Aucun cours disponible";
 		else {
 			$select_course = $mform->createElement( 'select', 'course', 'Liste des cours cr&eacute;&eacute;s :', null,array('onchange' => 'setTextField(this,\'tcourse\');'));
 			$select_course->addOption( 'Cours cr&eacute;&eacute; par erreur', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
