@@ -21,7 +21,7 @@ $connect = oci_connect($CFG->si_user,$CFG->si_pass,$CFG->si_url_base, 'AL32UTF8'
 // 168 heures = 7 jours
 //
 
-if($age_cache >= 0 && $connect == true)
+if($age_cache >= 168 && $connect == true)
 {
 	
 	// on efface le cache
