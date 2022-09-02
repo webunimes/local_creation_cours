@@ -23,7 +23,7 @@ class annul_html_form extends moodleform {
 		defined('MOODLE_INTERNAL') || die();
                 global $DB;
 
-		$sql = "SELECT c.idnumber, c.fullname, cat.name FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c, mdl_course_categories cat  WHERE u.id = r.userid  AND u.id = $USER->id  AND r.contextid = cx.id  AND cx.instanceid = c.id  AND r.roleid = '3' AND cat.id = c.category";
+		$sql = "SELECT c.id, c.idnumber, c.fullname, cat.name FROM mdl_user u, mdl_role_assignments r, mdl_context cx, mdl_course c, mdl_course_categories cat  WHERE u.id = r.userid  AND u.id = $USER->id  AND r.contextid = cx.id  AND cx.instanceid = c.id  AND r.roleid = '3' AND cat.id = c.category";
 
 
                 $courses = $DB->get_records_sql($sql, $params, 0, $limit);
@@ -33,7 +33,7 @@ class annul_html_form extends moodleform {
 			$select_course = $mform->createElement( 'select', 'course', 'Liste des cours cr&eacute;&eacute;s :', null,array('onchange' => 'setTextField(this,\'tcourse\');'));
 			$select_course->addOption( 'Cours cr&eacute;&eacute; par erreur', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
                 	foreach ($courses as $course) {
-				$select_course->addOption($course->fullname.' ('.$course->idnumber.') - '.$course->name,$course->idnumber);
+				$select_course->addOption($course->fullname.' ('.$course->idnumber.') - '.$course->name,$course->id);
 //                      	echo $course->idnumber . ' --> ' . $course->enseignant;
 			}
 			$mform->addElement($select_course);

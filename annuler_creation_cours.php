@@ -34,18 +34,33 @@ $mform = new annul_html_form();
 //Form processing and displaying is done here
 if ($mform->is_cancelled()) {
     //Handle form cancel operation, if cancel button is present on form
+	echo '<script type="text/javascript">window.location.href = "/local/creation_cours/creation_cours.php";</script>' ;
 } else if ($fromform = $mform->get_data()) {
   //In this case you process validated data. $mform->get_data() returns data posted in form.
   $formdata = $mform->get_data();
   $course = $formdata->course;
   $tcourse = $formdata->tcourse;
-  $headers = "From: no-reply-coursenligne@unimes.fr\r\n";
-  $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
-  $subject = utf8_decode("demande de suppression du cours ".$tcourse." (".$course.") par ".$uid);
-  $message = utf8_decode("demande de suppression du cours ".$tcourse." (".$course.") par ".$uid."<br/><a href='".$CFG->wwwroot."/course/view.php?idnumber=".$course."'>Cliquez ici</a>.");
-  //mail("si-scol@unimes.fr",$subject,$message,$headers);
-  mail("no-reply-coursenligne@unimes.fr",$subject,$message,$headers);
-  mail("guillaume.galles@unimes.fr",$subject,$message,$headers);
+
+  $subject = "Demande de suppression du cours ".$tcourse." (".$course.") par ".$uid;
+  $message = "<html><head></head><body>Demande de suppression du cours ".$tcourse." (".$course.") par ".$uid."<br/><a href='".$CFG->wwwroot."/course/delete.php?id=".$course."'>Cliquez ici</a>.</body></html>";
+
+
+  foreach ($CFG->adm_dest_mail as &$email) {
+ 	
+  $emailuser = new stdClass();
+  $emailuser->email = $email;
+  $emailuser->id = -99;
+
+  ob_start();
+  $success = email_to_user($emailuser, $USER, $subject, $message);
+  $smtplog = ob_get_contents();
+  ob_end_clean();
+  
+  }
+  
+  unset($email); 
+  
+  
   echo "<span style=\"font-size:16px\">Votre demande d'annulation a &eacute;t&eacute; prise en compte.<br/><br/> Pour &eacute;viter des cons&eacute;quences f&acirc;cheuses, celle-ci doit &ecirc;tre effectu&eacute;e manuellement.</span>";
 } else {
   // this branch is executed if the form is submitted but the data doesn't validate and the form should be redisplayed
