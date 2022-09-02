@@ -27,6 +27,7 @@ Ajout au fichier de config de moodle :
   * si_user : nom d'utilisateur pour la connexion au SI (base oracle),
   * si_pass : mot de passe pour la connexion au SI
   * si_url_base : url d'accès à la base de la forme //server/sid
+  * adm_dest_mail : array des destinataires (administrateurs) du formulaire
 
 
 
