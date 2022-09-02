@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL) ;
+
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot.'/enrol/meta/lib.php');
 require_once($CFG->dirroot.'/mod/url/lib.php');
@@ -28,8 +30,32 @@ include_once($CFG->dirroot.'/local/creation_cours/form_creation_cours.php');
 if (strpos($USER->email,'@etudiant.unimes.fr') == false) { 
 
 ?>
+<style type="text/css">
+#grid { 
+  display: grid; 
+  grid-gap: 2%;
+}
+.unimes {
+color: #E3007B;
+}
+figure img {
+height: 300px;
+object-fit: contain;
+top: 0;
+}
 
+@media(max-width: 768px) {
+  #grid { grid-template-columns: 50%;} 
+}
+@media(min-width: 768px) {
+  #grid { grid-template-columns: 30% 30% 30%;} 
+}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-magnify/0.3.0/css/bootstrap-magnify.min.css" integrity="sha512-87oRirL4+UGU1hJaVeIATDDK5Jls/qE3sTFmAyc4zj+DdcJJmEgWwO4JhWaybNkz8jhNbMesbBnlg73YM5tadQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <script type="text/javascript" src="js/jquery.chained.js"></script>
+<script type="text/javascript" src="js/util.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-magnify/0.3.0/js/bootstrap-magnify.min.js" integrity="sha512-n1dSnMZ7YxhSyddGMrwME3dwjFV9KpBYAg8Xlkm19rdSMFEmQ4F4tAVzRETkOP9jljMy5s1+lXlZ/6ktLS0SNg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 <script type="text/javascript">
 function setTextField(ddl, id) {
 	document.getElementById(id).value = ddl.options[ddl.selectedIndex].text;
@@ -82,9 +108,19 @@ if (isset($courscree)) {
 		$niveau4 = $formdata->niveau4;
 		$tniveau4 = $formdata->tniveau4;
 
-		echo $tniveau3;
+		$template = $formdata->template;
 
-		$backup = __DIR__."/template.mbz";
+		// $model = __DIR__."/templates/$template.mbz";
+
+		// On recherche les fichiers template en base moodle : 
+		$sel_tpl = "select filename, contenthash from mdl_files where filename in ('hyb_them.mbz','hyb_tuiles.mbz','presenrichi_them.mbz','presenrichi_tuiles.mbz','standard_them.mbz','standard_tuiles.mbz') and filearea='content';";
+
+		$files = $DB->get_records_sql_menu($sel_tpl);
+		// print_r($files);
+		$filedir = '/data2/moodle/2022/filedir/';
+		
+		$model = $filedir . substr($files[$template.'.mbz'],0,2) .'/'. substr($files[$template.'.mbz'],2,2) .'/'. $files[$template.'.mbz'];
+		$backup = "";
 	
 		//
 		// guillaume adaptation postgres
@@ -119,13 +155,11 @@ if (isset($courscree)) {
 					$fichier = "sauvegarde-moodle2-course-".$oldcourse."-";
 					$command = "ls -t $CFG->old_backup | grep '".$fichier."'";
 					exec($command,$array);
-					if(count($array) > 0)
-					$backup = $CFG->old_backup.$array[0];
+					if(count($array) > 0) $backup = $CFG->old_backup.$array[0];
 				}
 			}	
 			
 			pg_close($oldb);
-
 
 		} // fin restauration
 
@@ -149,7 +183,15 @@ if (isset($courscree)) {
 		$coursText = $ecue[0];
 		// TODO : Category créée avant ? : oui sauf semestres
 		// 
-		$cours = ucfirst(strtolower($coursText)).";".ucfirst(strtolower($coursText))."-".trim($coursId).";".$category.";".trim($coursId).";".strtolower($coursText).";".$backup.";topics\n";
+		$format = 'topics';
+		if (strpos($template,'tuiles') !== false) $format = 'tiles';
+
+		if (isset($formdata->oldcourse) && !empty($formdata->oldcourse) && !empty($backup)) { // on blinde le test !
+			$cours = ucfirst(strtolower($coursText)).";".ucfirst(strtolower($coursText))."-".trim($coursId).";".$category.";".trim($coursId).";".strtolower($coursText).";".$backup.";".$format."\n";
+			fwrite($fic,$cours);
+		}
+
+		$cours = ucfirst(strtolower($coursText)).";".ucfirst(strtolower($coursText))."-".trim($coursId).";".$category.";".trim($coursId).";".strtolower($coursText).";".$model.";".$format."\n";
 		fwrite($fic,$cours);
 
 		// $connect = ocilogon($CFG->si_user,$CFG->si_pass,$CFG->si_url_base);
@@ -186,7 +228,7 @@ if (isset($courscree)) {
 		fclose($fic);
 
 		//On exécute le script pour ajouter un cours
-		$commande = "/usr/bin/php ".$CFG->dirroot."/admin/tool/uploadcourse/cli/uploadcourse.php --mode=createorupdate --file=".__DIR__."/".$fichierCours." --delimiter=semicolon";
+		$commande = "/usr/bin/php ".$CFG->dirroot."/admin/tool/uploadcourse/cli/uploadcourse.php --mode=createorupdate --updatemode=dataonly --file=".__DIR__."/".$fichierCours." --delimiter=semicolon ";
 		exec($commande,$outhy);
 		$southy = implode("\n",$outhy);
 
@@ -233,12 +275,42 @@ if (isset($courscree)) {
 			}
 		}
 
+		global $DB;
+		// $sql = "SELECT c.id FROM {course} c WHERE c.idnumber='$coursId'";
+
+		$sql = "SELECT c.id as cid, e.id as eid FROM mdl_course c, mdl_enrol e WHERE e.courseid=c.id and e.enrol='self' and c.idnumber='$coursId'";
+
+		try {
+        		$keys = $DB->get_records_sql($sql);
+        		//print_r($keys);
+
+        		foreach ($keys as $id => $record) {
+        		        $idcours = $record->cid;
+        		        $idenrol = $record->eid;
+        		}
+		 // $idcours = array_keys($DB->get_records_sql($sql))[0];
+		} catch (Exception $e) {
+		  echo '<center><br/><span style="padding:10px; color: white;background-color:red">',  $e->getMessage(), "</span><br/><br/>\n";
+		  echo '<span style="margin:20px;"><a class="btn btn-primary" href="'.$CFG->wwwroot.'/local/creation_cours/creation_cours.php">Cr&eacute;er un nouveau cours</a></span>';
+		  echo '<span style="margin:20px;"><a class="btn btn-primary" href="'.$CFG->wwwroot.'/my/index.php">Retrouver tous mes cours</a></span></center>';
+		  exit;
+		}
+		//print_r(array_keys($idcours)[0]);
+		//var_dump(get_object_vars($idcours));
+		//echo "res : ".array_keys($idcours)[0];
+
 		echo "<div class='span12 success'>";
 		echo "<br/>Votre cours " . $coursText . " a bien &eacute;t&eacute; cr&eacute;&eacute;.<br/><br/>";
 		echo "Nom de l'enseignant : $nom <br/><br/>";
-		echo '<a href="'.$CFG->wwwroot.'/local/creation_cours/creation_cours.php">Cliquez-ici pour effectuer une nouvelle cr&eacute;ation de cours</a><br/><br/>';
-		echo '<a href="'.$CFG->wwwroot.'/course/view.php?idnumber='.$coursId.'" target="_blank">Cliquez-ici pour aller dans l\'espace de votre 
-cours</a><br/><br/>';
+		echo "<div id='grid'>";
+		// echo '<span style="text-align: center;"><a class="btn btn-primary" href="'.$CFG->wwwroot.'/local/creation_cours/edit_self_enrol.php?courseid='.$idcours.'">Ajouter une cl&eacute; d\'inscription</a></span>';
+		echo '<span style="text-align: center;"><a class="btn btn-primary" href="'.$CFG->wwwroot.'/enrol/editinstance.php?courseid='.$idcours.'&id='.$idenrol.'&type=self">Cr&eacute;er la cl&eacute; d\'inscription</a></span>';
+		echo '<span style="text-align: center;"><a class="btn btn-primary" href="'.$CFG->wwwroot.'/course/view.php?idnumber='.$coursId.'" target="_blank">Acc&eacute;der à mon cours</a></span>';
+		echo '<span style="text-align: center;"><a class="btn btn-primary" href="'.$CFG->wwwroot.'/local/creation_cours/creation_cours.php">Cr&eacute;er ou supprimer un cours</a></span>';
+		// echo '<span><a class="btn btn-primary" href="'.$CFG->wwwroot.'/local/creation_cours/creation_cours.php">Cr&eacute;er un nouveau cours</a></span>';
+		// echo '<span><a class="btn btn-primary" href="'.$CFG->wwwroot.'/my/index.php">Retrouver tous mes cours</a></span>';
+		// echo '<span><a class="btn btn-primary" href="'.$CFG->wwwroot.'/local/creation_cours/annuler_creation_cours.php">Suppression d\'un cours cr&eacute;&eacute; par erreur</a></span>';
+		echo "</div>";
 		if (isset ($mutualises)) {
 			echo "Il s'agissait d'un cours mutualis&eacute;, voici la liste des espaces créés :<br/>";
 			foreach(array_keys($mutualises) as $idCours) {
@@ -251,24 +323,32 @@ cours</a><br/><br/>';
 		// On va ensuite essayer de renseigner l'url des cours mutualises
 
 		$southy = $southy . "\n\nServeur : " . $_SERVER['HTTP_HOST'] . " - " . $_SERVER['SERVER_ADDR'];
-
-		$headers = "From: no-reply-coursenligne@unimes.fr\r\n";
-		//mail("si-scol@unimes.fr",utf8_decode("création automatique du cours ".$coursText." (".$coursId.") pour ".$uid),$southy,$headers);
-		mail("no-reply-coursenligne@unimes.fr",utf8_decode("création automatique du cours ".$coursText." (".$coursId.") pour ".$uid),$southy,$headers);
-		mail("guillaume.galles@unimes.fr",utf8_decode("création automatique du cours ".$coursText." (".$coursId.") pour ".$uid),$southy,$headers);
+		$subject = "Création automatique du cours ".$coursText." (".$coursId.") pour ".$uid ;
+		
 
 		//On écrit le second fichier qui permet d'enroller les enseignants
-//	echo "ecriture dans enroll.csv";
+		//echo "ecriture dans enroll.csv";
 		$fichierCours = "enroll.csv";
 		$fic = fopen($fichierCours,'a+');
 		$ch = "add,editingteacher,".$idnumber.",".$coursId."\n";
 		fwrite($fic,$ch);
-//	echo "ecriture dans enroll.csv : $ch ... done";
-
+		//	echo "ecriture dans enroll.csv : $ch ... done";
 		exec('/usr/bin/php '.$CFG->dirroot.'/enrol/flatfile/cli/sync.php');
-		echo "/usr/bin/php $CFG->dirroot /enrol/flatfile/cli/sync.php";
-
 		$courscree = true;
+
+                foreach ($CFG->adm_dest_mail as &$email) {
+
+                        $emailuser = new stdClass();
+                        $emailuser->email = $email;
+                        $emailuser->id = -99;
+
+                        ob_start();
+                        $success = email_to_user($emailuser, $USER, $subject, $southy, '', $CFG->dirroot ."/local/creation_cours/cours.csv", "cours.csv");
+                        $smtplog = ob_get_contents();
+                        ob_end_clean();
+                }
+
+                unset($email);
 
 	} else {
 		// this branch is executed if the form is submitted but the data doesn't validate and the form should be redisplayed
@@ -290,9 +370,9 @@ cours</a><br/><br/>';
 
 	<br/><br/>
 
-
 	<?php
 } // Fin if (!isset(courscree)) 
+
 
 echo $OUTPUT->footer();
 
