@@ -32,7 +32,7 @@ B.      Cr&eacute;er un espace de cours en r&eacute;cup&eacute;rant les ressourc
         </td></tr></table>
 ");
 
-		// Première partie : cr&eacute;ation d'un cours
+		// PremiÃ¨re partie : cr&eacute;ation d'un cours
 		
 		$mform->addElement('header', 'destination', 'Cr&eacute;ation d\'un cours vide');
 		$mform->addElement('html', 'S&eacute;lectionnez votre cours en utilisant obligatoirement les 4 listes d&eacute;roulantes.<br/><br/>');
@@ -138,7 +138,7 @@ B.      Cr&eacute;er un espace de cours en r&eacute;cup&eacute;rant les ressourc
 		}
 		$niveaux4_cache = apcu_fetch('niveaux4');
 
-		$select_niveau4 = $mform->createElement( 'select', 'niveau4', 'Niveau 4 :', null, array('onchange' => 'setTextField(this,\'tniveau4\');'));
+		$select_niveau4 = $mform->createElement( 'select', 'niveau4', 'Niveau 4 :', null, array('onchange' => 'setTextField(this,\'tniveau4\');', 'onblur' => 'setTextField(this,\'tniveau4\');'));
 		$select_niveau4->addOption( 'Cours', '', array( 'disabled' => 'disabled', 'selected'=>'true' ) );
 		foreach ($niveaux4_cache as $row) {
 			if (in_array($row[0],array_keys($courscrees)))
